@@ -9,15 +9,46 @@
 import UIKit
 
 class GameViewController: UIViewController {
-
-    @IBOutlet var gameboardView: GameboardView!
-    @IBOutlet var firstPlayerTurnLabel: UILabel!
-    @IBOutlet var secondPlayerTurnLabel: UILabel!
-    @IBOutlet var winnerLabel: UILabel!
-    @IBOutlet var restartButton: UIButton!
+    
+    @IBOutlet var gameboardView: GameboardView! {
+        didSet {
+            gameboardView.isHidden = true
+        }
+    }
+    @IBOutlet var firstPlayerTurnLabel: UILabel! {
+        didSet {
+            firstPlayerTurnLabel.isHidden = true
+        }
+    }
+    @IBOutlet var secondPlayerTurnLabel: UILabel! {
+        didSet {
+            secondPlayerTurnLabel.isHidden = true
+        }
+    }
+    @IBOutlet var winnerLabel: UILabel! {
+        didSet {
+            winnerLabel.isHidden = true
+        }
+    }
+    @IBOutlet var restartButton: UIButton! {
+        didSet {
+            restartButton.isHidden = true
+        }
+    }
+    @IBOutlet weak var startGameButton: UIButton!
+    @IBOutlet weak var gameModeSwitcher: UISegmentedControl!
     
     private let gameBoard = Gameboard()
     private var counter = 0
+    private var gameMode: GameMode {
+        switch self.gameModeSwitcher.selectedSegmentIndex {
+        case 0: return .twoPlayersGame
+        case 1: return .vsComputerGame
+        case 2: return .fiveOnFiveGame
+        default: return .twoPlayersGame
+        }
+    }
+    
     private lazy var referee = Referee(gameboard: gameBoard)
     private var currentState: GameState! {
         didSet {
@@ -25,10 +56,14 @@ class GameViewController: UIViewController {
         }
     }
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setFirstState()
+        
+        
+        // setFirstState()
         
         gameboardView.onSelectPosition = { [weak self] position in
             guard let self = self else { return }
@@ -39,11 +74,15 @@ class GameViewController: UIViewController {
                 self.setNextState()
             }
             
-//            self.gameboardView.placeMarkView(XView(), at: position)
+            //            self.gameboardView.placeMarkView(XView(), at: position)
         }
     }
     
     private func setFirstState() {
+        if gameMode == .vsComputerGame {
+            secondPlayerTurnLabel.text = "Computer"
+        } else { secondPlayerTurnLabel.text = "2nd player"}
+        gameboardView.isHidden = false
         let player = Player.first
         currentState = PlayerState(player: player,
                                    gameViewController: self,
@@ -73,6 +112,18 @@ class GameViewController: UIViewController {
                                        gameBoard: gameBoard,
                                        gameBoardView: gameboardView, markViewPrototype: player.markViewPrototype)
         }
+    }
+    
+    
+    
+    @IBAction func startGameButtonTapped(_ sender: UIButton) {
+        gameModeSwitcher.isHidden = true
+        gameboardView.clear()
+        gameBoard.clear()
+        counter = 0
+        setFirstState()
+        startGameButton.isHidden = true
+        restartButton.isHidden = false
     }
     
     @IBAction func restartButtonTapped(_ sender: UIButton) {

@@ -9,6 +9,7 @@
 import UIKit
 
 class PlayerState: GameState {
+    
     public let player: Player
     var isMoveCompleted: Bool = false
     private weak var gameViewController: GameViewController?

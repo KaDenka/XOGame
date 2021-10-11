@@ -14,7 +14,7 @@ class GameOverState: GameState {
     
     private weak var gameViewController: GameViewController?
     
-    init(winner: Player?, gameViewController: GameViewController) {
+    init(winner: Player?, gameViewController: GameViewController?) {
         self.winner = winner
         self.gameViewController = gameViewController
     }
@@ -30,6 +30,9 @@ class GameOverState: GameState {
         
         gameViewController?.firstPlayerTurnLabel.isHidden = true
         gameViewController?.secondPlayerTurnLabel.isHidden = true
+        gameViewController?.gameModeSwitcher.isHidden = false
+        gameViewController?.startGameButton.isHidden = false
+        gameViewController?.restartButton.isHidden = true
         
     }
     
@@ -40,7 +43,7 @@ class GameOverState: GameState {
         case .first:
             return "1st player"
         case .second:
-            return "2nd player"
+            return gameViewController?.secondPlayerTurnLabel.text ?? "2nd player"
         case .none:
             return "There is no winner"
         }
