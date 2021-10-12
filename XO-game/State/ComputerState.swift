@@ -36,6 +36,8 @@ class ComputerState: GameState {
         }
         
         gameViewController?.winnerLabel.isHidden = true
+        
+        isMoveCompleted = true
        
     }
     

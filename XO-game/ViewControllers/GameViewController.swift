@@ -60,12 +60,7 @@ class GameViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
-        
-        
-        // setFirstState()
-        
+       
         gameboardView.onSelectPosition = { [weak self] position in
             guard let self = self else { return }
             self.currentState.addMark(at: position)
@@ -77,7 +72,6 @@ class GameViewController: UIViewController {
     }
     
     private func setFirstState() {
-        gameboardView.isHidden = false
         let player = Player.first
         currentState = PlayerState(player: player,
                                    gameViewController: self,
@@ -90,43 +84,31 @@ class GameViewController: UIViewController {
         
         if gameOverChecking() { return }
         
-        if GameSessionSingletone.shared.gameMode == .vsComputerGame {
-            if let playerInputState = currentState as? PlayerState {
-                let player = playerInputState.player.next
-                delay(seconds: 0.4) {
-                    self.currentState = ComputerState(player: player,
-                                                      gameViewController: self,
-                                                      gameBoard: self.gameBoard,
-                                                      gameBoardView: self.gameboardView,
-                                                      markViewPrototype: player.markViewPrototype)
-                    self.counter += 1
-                    self.setFirstState()
-                    if self.gameOverChecking() { return }
-                    return
-                }
-            }  else if let playerInputState = currentState as? ComputerState {
-                let player = playerInputState.player.next
-                currentState = PlayerState(player: player,
-                                           gameViewController: self,
-                                           gameBoard: gameBoard,
-                                           gameBoardView: gameboardView,
-                                           markViewPrototype: player.markViewPrototype)
+        let playerInputState = currentState as? PlayerState
+        let player = playerInputState?.player.next
+        
+        if player == .computer {
+            delay(seconds: 0.5) { [self] in
+                currentState = ComputerState(player: player!,
+                                            gameViewController: self,
+                                            gameBoard: gameBoard,
+                                            gameBoardView: gameboardView,
+                                            markViewPrototype: player!.markViewPrototype)
+                counter += 1
+                if gameOverChecking() {return}
+                setFirstState()
+                return
             }
-            
-        } else if GameSessionSingletone.shared.gameMode == .twoPlayersGame {
-
-            if let playerInputState = currentState as? PlayerState {
-                let player = playerInputState.player.next
-                currentState = PlayerState(player: player,
-                                           gameViewController: self,
-                                           gameBoard: gameBoard,
-                                           gameBoardView: gameboardView,
-                                           markViewPrototype: player.markViewPrototype)
-            }
-        } //else {
-//            // Five on five mode logic
-//        }
+        }
+        
+        currentState = PlayerState(player: player!,
+                                   gameViewController: self,
+                                   gameBoard: gameBoard,
+                                   gameBoardView: gameboardView,
+                                   markViewPrototype: player!.markViewPrototype)
+        
     }
+    
     
     private func gameOverChecking() -> Bool {
         if let winner = referee.determineWinner() {
@@ -149,10 +131,9 @@ class GameViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: timeInterval, execute: completion)
     }
     
-    
-    
     @IBAction func startGameButtonTapped(_ sender: UIButton) {
         gameModeSwitcher.isHidden = true
+        gameboardView.isHidden = false
         gameboardView.clear()
         gameBoard.clear()
         counter = 0
@@ -173,5 +154,6 @@ class GameViewController: UIViewController {
         setFirstState()
         counter = 0
     }
+    
 }
 
