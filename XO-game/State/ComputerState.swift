@@ -1,5 +1,5 @@
 //
-//  ComputerMoveState.swift
+//  ComputerState.swift
 //  XO-game
 //
 //  Created by Denis Kazarin on 11.10.2021.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-class ComputerMoveState: GameState {
+class ComputerState: GameState {
     var isMoveCompleted: Bool = false
     
     func begin() {

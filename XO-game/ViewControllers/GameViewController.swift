@@ -112,6 +112,8 @@ class GameViewController: UIViewController {
                                        gameBoard: gameBoard,
                                        gameBoardView: gameboardView, markViewPrototype: player.markViewPrototype)
         }
+        
+        
     }
     
     
@@ -121,6 +123,7 @@ class GameViewController: UIViewController {
         gameboardView.clear()
         gameBoard.clear()
         counter = 0
+        GameSessionSingletone.shared.gameMode = gameMode
         setFirstState()
         startGameButton.isHidden = true
         restartButton.isHidden = false

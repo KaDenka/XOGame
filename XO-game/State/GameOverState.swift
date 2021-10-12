@@ -43,7 +43,9 @@ class GameOverState: GameState {
         case .first:
             return "1st player"
         case .second:
-            return gameViewController?.secondPlayerTurnLabel.text ?? "2nd player"
+            return "2nd player"
+        case .computer:
+            return "Computer"
         case .none:
             return "There is no winner"
         }
