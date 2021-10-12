@@ -51,15 +51,6 @@ class PlayerState: GameState {
             return
         }
         
-//        let markView: MarkView
-//
-//        switch player {
-//        case .first:
-//            markView = XView()
-//        case .second:
-//            markView = OView()
-//        }
-        
         gameBoard?.setPlayer(player, at: position)
         gameBoardView.placeMarkView(markViewPrototype.copy(), at: position)
         isMoveCompleted = true
