@@ -12,4 +12,7 @@ final class GameSessionSingletone {
     static let shared = GameSessionSingletone()
     private init() {}
     var gameMode: GameMode?
+    
+    var firstPlayerFiveModeMoves = [FiveModePlayerMove]()
+    var secondPlayerFiveModeMoves = [FiveModePlayerMove]()
 }

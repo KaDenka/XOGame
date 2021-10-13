@@ -9,6 +9,8 @@
 import UIKit
 
 class GameViewController: UIViewController {
+
+    // MARK: - Размещение элементов контроллера
     
     @IBOutlet var gameboardView: GameboardView! {
         didSet {
@@ -38,6 +40,7 @@ class GameViewController: UIViewController {
     @IBOutlet weak var startGameButton: UIButton!
     @IBOutlet weak var gameModeSwitcher: UISegmentedControl!
     
+// MARK: - Добавление необходимых переменных
     private let gameBoard = Gameboard()
     private var counter = 0
     private var gameMode: GameMode {
@@ -56,57 +59,104 @@ class GameViewController: UIViewController {
         }
     }
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-       
+    // MARK: - Отработка действующей позиции
         gameboardView.onSelectPosition = { [weak self] position in
             guard let self = self else { return }
             self.currentState.addMark(at: position)
+            
             if self.currentState.isMoveCompleted {
-                self.counter += 1
-                self.setNextState()
+                
+                if GameSessionSingletone.shared.gameMode == .fiveOnFiveGame {
+                    self.delay(seconds: 0.5) {
+                        self.gameboardView.clear()
+                        self.gameBoard.clear()
+                        self.setNextState()
+                    }
+                } else {
+                    self.counter += 1
+                    self.setNextState()
+                }
             }
         }
     }
-    
+// MARK: - Первичное состояние игрока
     private func setFirstState() {
         let player = Player.first
-        currentState = PlayerState(player: player,
-                                   gameViewController: self,
-                                   gameBoard: gameBoard,
-                                   gameBoardView: gameboardView,
-                                   markViewPrototype: player.markViewPrototype)
-    }
-    
-    private func setNextState() {
         
-        if gameOverChecking() { return }
-        
-        let playerInputState = currentState as? PlayerState
-        let player = playerInputState?.player.next
-        
-        if player == .computer {
-            delay(seconds: 0.5) { [self] in
-                currentState = ComputerState(player: player!,
+        if GameSessionSingletone.shared.gameMode == .fiveOnFiveGame {
+            currentState = FiveModePlayerState(player: player,
+                                               gameViewController: self,
+                                               gameBoard: gameBoard,
+                                               gameBoardView: gameboardView,
+                                               markViewPrototype: player.markViewPrototype)
+        } else { currentState = PlayerState(player: player,
                                             gameViewController: self,
                                             gameBoard: gameBoard,
                                             gameBoardView: gameboardView,
-                                            markViewPrototype: player!.markViewPrototype)
+                                            markViewPrototype: player.markViewPrototype)
+        }
+    }
+// MARK: - Следующее состояние игрока
+    private func setNextState() {
+        
+        // Завершение игры в режиме пять-на-пять
+        if GameSessionSingletone.shared.gameMode == .fiveOnFiveGame && gameCompletionChecking() {
+            currentState = FiveModePlayGameState(gameViewController: self,
+                                                 gameBoard: gameBoard,
+                                                 gameBoardView: gameboardView) { [self] in
+                
+                if let winner = referee.determineWinner() {
+                    Log(action: .gameFinished(winner: winner))
+                    currentState = GameOverState(winner: winner, gameViewController: self)
+                } else {
+                    Log(action: .gameFinished(winner: nil))
+                    currentState = GameOverState(winner: nil, gameViewController: self)
+                }
+            }
+            return
+        }
+        
+        // Завершение игры в режимах двух игроков и против компьютера
+        if GameSessionSingletone.shared.gameMode != .fiveOnFiveGame && gameOverChecking() { return }
+        
+        
+        // Формирование состояния игрока
+        let playerInputState = currentState as? PlayerState
+        let player = playerInputState?.player.next
+        
+        
+        // Отработка хода в режиме пять-на-пять или хода игрока в режиме двух игроков
+        if GameSessionSingletone.shared.gameMode == .fiveOnFiveGame, let playerInputState = currentState as? FiveModePlayerState {
+            let player = playerInputState.player.next
+            currentState = FiveModePlayerState(player: player,
+                                               gameViewController: self,
+                                               gameBoard: gameBoard,
+                                               gameBoardView: gameboardView,
+                                               markViewPrototype: player.markViewPrototype)
+        } else {
+            currentState = PlayerState(player: player!,
+                                       gameViewController: self,
+                                       gameBoard: gameBoard,
+                                       gameBoardView: gameboardView,
+                                       markViewPrototype: player!.markViewPrototype)
+        }
+        
+        // Отработка хода компьютера
+        if player == .computer {
+            delay(seconds: 0.5) { [self] in
+                currentState = ComputerState(player: player!,
+                                             gameViewController: self,
+                                             gameBoard: gameBoard,
+                                             gameBoardView: gameboardView,
+                                             markViewPrototype: player!.markViewPrototype)
                 counter += 1
                 if gameOverChecking() {return}
                 setFirstState()
                 return
             }
         }
-        
-        currentState = PlayerState(player: player!,
-                                   gameViewController: self,
-                                   gameBoard: gameBoard,
-                                   gameBoardView: gameboardView,
-                                   markViewPrototype: player!.markViewPrototype)
-        
     }
     
     
@@ -124,6 +174,10 @@ class GameViewController: UIViewController {
         }
         
         return false
+    }
+    
+    private func gameCompletionChecking() -> Bool {
+        return GameSessionSingletone.shared.firstPlayerFiveModeMoves.count > 0 && GameSessionSingletone.shared.secondPlayerFiveModeMoves.count > 0
     }
     
     private func delay(seconds: Double, completion: @escaping ()->()) {
@@ -148,7 +202,6 @@ class GameViewController: UIViewController {
     
     @IBAction func restartButtonTapped(_ sender: UIButton) {
         Log(action: .restartGame)
-        
         gameboardView.clear()
         gameBoard.clear()
         setFirstState()
