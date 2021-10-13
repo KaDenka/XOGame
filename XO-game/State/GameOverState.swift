@@ -45,8 +45,7 @@ class GameOverState: GameState {
         case .second:
             return "2nd player"
         case .computer:
-            if GameSessionSingletone.shared.gameMode == .vsComputerGame { return "Computer"
-            } else { return "2nd player" }
+                return "2nd player"
         case .none:
             return "There is no winner"
         }

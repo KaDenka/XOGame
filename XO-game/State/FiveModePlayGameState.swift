@@ -53,7 +53,7 @@ class FiveModePlayGameState: GameState {
     }
     
     func begin() {
-        timer = Timer.scheduledTimer(timeInterval: 0.75,
+        timer = Timer.scheduledTimer(timeInterval: 0.6,
                                      target: self,
                                      selector: #selector(performMove),
                                      userInfo: nil, repeats: true)

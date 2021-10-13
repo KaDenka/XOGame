@@ -136,11 +136,14 @@ class GameViewController: UIViewController {
                                                gameBoardView: gameboardView,
                                                markViewPrototype: player.markViewPrototype)
         } else {
-            currentState = PlayerState(player: player!,
+            if let playerInputState = currentState as? PlayerState {
+            let player = playerInputState.player.next
+            currentState = PlayerState(player: player,
                                        gameViewController: self,
                                        gameBoard: gameBoard,
                                        gameBoardView: gameboardView,
-                                       markViewPrototype: player!.markViewPrototype)
+                                       markViewPrototype: player.markViewPrototype)
+            }
         }
         
         // Отработка хода компьютера
